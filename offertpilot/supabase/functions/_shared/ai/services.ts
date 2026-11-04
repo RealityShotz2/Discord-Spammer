@@ -63,7 +63,7 @@ export async function analyzeLead(db: SupabaseClient, env: Env, leadId: string) 
   const res = await callLlm(env, {
     schemaName: "lead_analysis",
     schema: LeadAnalysisSchema,
-    maxTokens: 1200,
+    maxTokens: 16000,
     system: `${BASE_RULES}\n\nUppgift: Analysera en inkommen kundförfrågan. Klassificera den, sammanfatta, matcha mot företagets tjänster, identifiera vad som saknas för en offert, föreslå följdfrågor och rekommendera nästa steg.`,
     user: `${companyBlock(ctx)}\n\n${customerBlock(lc)}`,
   }, () => demoAnalyzeLead(ctx, lc));
@@ -97,7 +97,7 @@ export async function draftQuotation(db: SupabaseClient, env: Env, leadId: strin
   const res = await callLlm(env, {
     schemaName: "quote_draft",
     schema: QuoteDraftSchema,
-    maxTokens: 2500,
+    maxTokens: 16000,
     system: `${BASE_RULES}\n\nUppgift: Ta fram ett strukturerat offertutkast. Välj rader ENDAST från företagets tjänstekatalog (ange service_id). Ange mängder bara om de framgår av kunddata – annars mängd 1 och ett antagande. Om ingen tjänst passar, använd service_id null; raden får då manuellt pris. Ange aldrig priser, rabatter eller leveranstider själv – de hämtas från katalogen.`,
     user: `${companyBlock(ctx)}\n\n${customerBlock(lc)}${preferred.length ? `\n\nTidigare matchade tjänster: ${preferred.join(", ")}` : ""}${extraInstructions ? `\n\nInstruktion från företaget (inte från kunden): ${extraInstructions.slice(0, 1000)}` : ""}`,
   }, () => demoQuoteDraft(ctx, lc, preferred));
@@ -136,7 +136,7 @@ export async function draftReply(db: SupabaseClient, env: Env, leadId: string, i
   const res = await callLlm(env, {
     schemaName: "message_draft",
     schema: MessageDraftSchema,
-    maxTokens: 1000,
+    maxTokens: 16000,
     system: `${BASE_RULES}\n\nUppgift: Skriv ett svarsmejl till kunden i företagets tonläge. Tacka för förfrågan och ställ de viktigaste följdfrågorna. Lova inga priser eller tider. Avsluta med företagets namn.`,
     user: `${companyBlock(ctx)}\n\n${customerBlock(lc)}\n\nFöreslagna följdfrågor: ${questions.join(" | ") || "inga"}${instructions ? `\n\nInstruktion från företaget: ${instructions.slice(0, 1000)}` : ""}`,
   }, () => demoReply(ctx, lc, questions));
@@ -162,7 +162,7 @@ export async function draftFollowUp(db: SupabaseClient, env: Env, taskId: string
   const res = await callLlm(env, {
     schemaName: "message_draft",
     schema: MessageDraftSchema,
-    maxTokens: 800,
+    maxTokens: 16000,
     system: `${BASE_RULES}\n\nUppgift: Skriv ett kort, personligt uppföljningsmejl. Var hjälpsam, inte påträngande. Detta är påminnelse nummer ${task.sequence}. Erbjud inga rabatter eller nya villkor.`,
     user: `${companyBlock(ctx)}\n\n${customerBlock(lc)}\n\n${q ? `Offert ${q.number} "${q.title}" skickades ${q.sent_at?.slice(0, 10) ?? "nyligen"} och gäller till ${q.valid_until ?? "okänt datum"}.` : "Kunden har ännu inte fått svar på sin förfrågan."}`,
   }, () => demoFollowUp(ctx, lc, q?.number ?? null, task.sequence));

@@ -96,11 +96,12 @@ node scripts/e2e-ui.mjs      # 15 steg i webbläsaren (Playwright) – hela anv�
 | `APP_URL` | ja | Publik URL till appen (länkar i e-post), t.ex. `https://app.offertfabriken.se` |
 | `ALLOWED_ORIGINS` | rek. | Kommaseparerade origins för CORS (standard `*`) |
 | `RATE_LIMIT_SALT` | rek. | Salt för hashning av IP-adresser |
-| `ANTHROPIC_API_KEY` | ett av | Claude (standardmodell `claude-sonnet-5-5`) |
+| `ANTHROPIC_API_KEY` | ett av | Claude (standardmodell `claude-opus-5-5`) |
 | `OPENAI_API_KEY` | ett av | OpenAI eller kompatibel (`OPENAI_BASE_URL`) |
 | `AI_PROVIDER` | nej | `anthropic` eller `openai` om båda nycklarna finns |
 | `AI_MODEL` | nej | Åsidosätt modell |
-| `AI_TIMEOUT_MS` | nej | Standard 30000 |
+| `AI_TIMEOUT_MS` | nej | Standard 90000 |
+| `AI_EFFORT` | nej | `low`, `medium` (standard) eller `high` – lägre ger snabbare och billigare svar |
 | `RESEND_API_KEY`, `EMAIL_FROM` | för e-post | Utan dessa: demoläge, inget skickas |
 | `STRIPE_SECRET_KEY` | för betalning | Utan: demoläge, ingen debitering |
 | `STRIPE_WEBHOOK_SECRET` | för betalning | Signaturverifiering av webhooks |

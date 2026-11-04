@@ -95,7 +95,7 @@ Deno.serve(handler(["POST"], async (req) => {
     return json(req, { ...result, provider: meta.provider, demo: meta.provider === "demo" });
   } catch (err) {
     if (err instanceof AiError) {
-      await record({ provider: "unknown" }, false, `${err.code}: ${err.message}`);
+      await record({ provider: "unknown" }, false, `${err.code}: ${err.detail ?? err.message}`);
       throw new HttpError(err.code === "timeout" ? 504 : 502, err.message, err.code);
     }
     throw err;
