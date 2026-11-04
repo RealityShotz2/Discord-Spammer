@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { Logo } from "@/components/layout/Logo";
 
 const PRIVACY = [
-  ["Personuppgiftsansvar", "Företaget som använder OffertPilot AI är personuppgiftsansvarigt för sina kunders uppgifter. OffertPilot AI är personuppgiftsbiträde och behandlar uppgifterna enligt ett personuppgiftsbiträdesavtal (PUB-avtal). [Fyll i bolagsnamn, organisationsnummer och kontaktuppgifter.]"],
+  ["Personuppgiftsansvar", "Företaget som använder OffertPilot AI är personuppgiftsansvarigt för sina kunders uppgifter. OffertPilot AI är personuppgiftsbiträde och behandlar uppgifterna enligt ett personuppgiftsbiträdesavtal (PUB-avtal). Tjänsten tillhandahålls av OffertPilot, Målaregatan 1, 693 33 Degerfors. [Organisationsnummer och e-post för dataskyddsfrågor fylls i före lansering.]"],
   ["Vilka uppgifter vi behandlar", "Kontoinformation (namn, e-post), företagsuppgifter samt uppgifter om ert företags kunder: namn, kontaktuppgifter, förfrågningar, meddelanden och offerter."],
   ["Ändamål och rättslig grund", "Uppgifterna behandlas för att tillhandahålla tjänsten (avtal), för säkerhet och missbruksskydd (berättigat intresse) samt för att uppfylla bokföringskrav (rättslig förpliktelse)."],
   ["AI-behandling", "Text från förfrågningar skickas till vald AI-leverantör för analys och utkast. Data används inte för att träna modeller. [Ange leverantör, region och underbiträden.]"],
@@ -11,7 +11,7 @@ const PRIVACY = [
   ["Kontakt", "[E-postadress till dataskyddsansvarig]"],
 ];
 const TERMS = [
-  ["Tjänsten", "OffertPilot AI är ett verktyg som hjälper företag att hantera förfrågningar, ta fram offertutkast och följa upp affärer. [Fyll i avtalspart.]"],
+  ["Tjänsten", "OffertPilot AI är ett verktyg som hjälper företag att hantera förfrågningar, ta fram offertutkast och följa upp affärer. Avtalspart är OffertPilot, Målaregatan 1, 693 33 Degerfors."],
   ["Ansvar för innehåll", "Kunden ansvarar för priser, villkor och innehåll i offerter. Alla offerter och utgående meddelanden granskas och godkänns av kunden innan de skickas. AI-genererade utkast kan innehålla fel."],
   ["Abonnemang och betalning", "Abonnemang debiteras månadsvis i förskott. Priser anges exklusive moms. [Ange uppsägningstid och villkor för ändringar.]"],
   ["Tillgänglighet", "Vi strävar efter hög tillgänglighet men garanterar inte avbrottsfri drift. [Ange eventuell SLA.]"],
