@@ -31,7 +31,7 @@ export function ProductPreview() {
       <div className="overflow-hidden rounded-[22px] border border-white/10 bg-[#0b0f1f]">
         <div className="flex items-center gap-2 border-b border-white/10 px-4 py-3">
           <span className="size-2.5 rounded-full bg-white/15" /><span className="size-2.5 rounded-full bg-white/15" /><span className="size-2.5 rounded-full bg-white/15" />
-          <span className="ml-3 font-mono text-[10.5px] text-white/40">app.offertfabriken.se/leads/maria-lind</span>
+          <span className="ml-3 min-w-0 truncate font-mono text-[10.5px] text-white/40">app.offertfabriken.se/leads/maria-lind</span>
           <span className="ml-auto font-mono text-[10px] uppercase tracking-[0.14em] text-white/30">Exempel</span>
         </div>
         <div role="tablist" aria-label="Flöde" className="flex gap-1 border-b border-white/10 p-2">

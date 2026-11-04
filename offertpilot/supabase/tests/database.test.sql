@@ -21,6 +21,11 @@ insert into auth.users (id, email, email_confirmed_at, aud, role) values
   ('cccccccc-0000-0000-0000-000000000003', 'cecilia@byggab.se', now(), 'authenticated', 'authenticated'),
   ('dddddddd-0000-0000-0000-000000000004', 'okand@exempel.se', null, 'authenticated', 'authenticated');
 
+-- ---------------------------------------------------------------- planer
+select results_eq($$ select id, price_sek, max_users, max_ai_leads_per_month from public.plans order by sort $$,
+  $$ values ('starter'::text, 399, 1, 30), ('professional'::text, 899, 5, 150), ('business'::text, 1799, 25, 600) $$,
+  'planerna har nya priser och oförändrade gränser');
+
 -- ---------------------------------------------------------------- onboarding
 select pg_temp.act_as('dddddddd-0000-0000-0000-000000000004');
 select throws_ok($$ select public.create_organization('{"name":"Ej verifierad AB"}') $$,
