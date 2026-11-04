@@ -425,10 +425,28 @@ enabled = true
 # format_options = "{\"keywordCase\":\"upper\",\"indent\":2,\"maxWidth\":180,\"commaStyle\":\"trailing\"}"
 
 [functions.public-inquiry]
+import_map = "./functions/deno.json"
 verify_jwt = false
 
 [functions.public-quote]
+import_map = "./functions/deno.json"
 verify_jwt = false
 
 [functions.stripe-webhook]
+import_map = "./functions/deno.json"
 verify_jwt = false
+
+[functions.ai]
+import_map = "./functions/deno.json"
+
+[functions.billing]
+import_map = "./functions/deno.json"
+
+[functions.send-message]
+import_map = "./functions/deno.json"
+
+[functions.send-quotation]
+import_map = "./functions/deno.json"
+
+[functions.team-invite]
+import_map = "./functions/deno.json"
