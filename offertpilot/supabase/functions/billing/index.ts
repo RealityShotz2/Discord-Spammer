@@ -58,9 +58,18 @@ Deno.serve(handler(["POST"], async (req) => {
     cancel_url: `${appUrl()}/app/installningar/fakturering?status=avbruten`,
     locale: "sv",
     "automatic_tax[enabled]": "false",
+    // Svensk moms läggs på priset (priserna är exkl. moms)
+    "billing_address_collection": "required",
+    "tax_id_collection[enabled]": "true",
+    "allow_promotion_codes": "true",
   };
-  if (sub?.stripe_customer_id) params.customer = sub.stripe_customer_id;
-  else if (user.email) params.customer_email = user.email;
+  const taxRate = Deno.env.get("STRIPE_TAX_RATE_ID");
+  if (taxRate) params["line_items[0][tax_rates][0]"] = taxRate;
+  if (sub?.stripe_customer_id) {
+    params.customer = sub.stripe_customer_id;
+    params["customer_update[address]"] = "auto";
+    params["customer_update[name]"] = "auto";
+  } else if (user.email) params.customer_email = user.email;
   const session = await stripe("checkout/sessions", params);
   return json(req, { url: session.url });
 }));

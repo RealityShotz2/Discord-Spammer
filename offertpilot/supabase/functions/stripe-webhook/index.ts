@@ -45,7 +45,14 @@ Deno.serve(async (req) => {
       current_period_end: obj.current_period_end ? new Date(obj.current_period_end * 1000).toISOString()
         : obj.items?.data?.[0]?.current_period_end ? new Date(obj.items.data[0].current_period_end * 1000).toISOString() : null,
     };
-    if (obj.metadata?.plan_id) update.plan_id = obj.metadata.plan_id;
+    // Planen avgörs av priset (fungerar även när kunden byter plan i kundportalen)
+    const priceId = obj.items?.data?.[0]?.price?.id;
+    const { data: plan } = priceId
+      ? await admin.from("plans").select("id").eq("stripe_price_id", priceId).maybeSingle()
+      : { data: null };
+    if (plan?.id) update.plan_id = plan.id;
+    else if (obj.metadata?.plan_id) update.plan_id = obj.metadata.plan_id;
+    if (org && obj.customer) update.stripe_customer_id = obj.customer;
     const q = admin.from("subscriptions").update(update);
     await (org ? q.eq("organization_id", org) : q.eq("stripe_customer_id", obj.customer));
   }
