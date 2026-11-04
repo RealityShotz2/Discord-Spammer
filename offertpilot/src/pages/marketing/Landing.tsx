@@ -5,6 +5,7 @@ import {
   ShieldCheck, Sparkles, Sprout, Truck, Wrench, Zap,
 } from "lucide-react";
 import { useReveal } from "@/hooks/useReveal";
+import { formatPlanPrice, PLANS } from "@shared/plans.ts";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/layout/Logo";
@@ -35,11 +36,8 @@ const INDUSTRIES = [
   { icon: Building2, label: "Fastighetsservice" }, { icon: Sparkles, label: "Städ" },
 ];
 
-const PLANS = [
-  { id: "starter", name: "Starter", price: "999", desc: "För enmansföretaget som vill komma igång.", features: ["1 användare", "30 AI-assisterade leads/mån", "AI-offertutkast", "PDF-export och kundlänk", "Grundläggande översikt"] },
-  { id: "professional", name: "Professional", price: "1 999", desc: "För växande team med många förfrågningar.", features: ["Upp till 5 användare", "150 AI-assisterade leads/mån", "AI-skrivna uppföljningar", "Analys och diagram", "Egen profilfärg i offerter"], featured: true },
-  { id: "business", name: "Business", price: "3 999", desc: "För företag med flera team och högre volym.", features: ["Upp till 25 användare", "600 AI-assisterade leads/mån", "Avancerade arbetsflöden", "Prioriterad support", "Fler integrationer"] },
-];
+// Planer, priser och funktioner kommer från den centrala konfigurationen
+const PLAN_CARDS = PLANS.map((p) => ({ ...p, price: formatPlanPrice(p.priceSek), desc: p.description }));
 
 const FAQ = [
   ["Hittar AI:n på priser?", "Nej. AI:n väljer bara tjänster ur din egen katalog och servern hämtar priset därifrån. Saknas ett pris markeras raden och offerten kan inte godkännas förrän du fyllt i det."],
@@ -119,7 +117,7 @@ export default function Landing() {
 
       {/* Produktförhandsvisning */}
       <section className="relative px-4 pb-24 sm:px-6 sm:pb-32">
-        <div className="mx-auto grid max-w-[1240px] items-center gap-14 lg:grid-cols-[.9fr_1.1fr]">
+        <div className="mx-auto grid max-w-[1240px] grid-cols-1 items-center gap-14 lg:grid-cols-[minmax(0,.9fr)_minmax(0,1.1fr)]">
           <div>
             <p className="reveal font-mono text-[11px] uppercase tracking-[0.14em] text-indigo-300">Från förfrågan till offert</p>
             <h2 className="reveal mt-4 text-3xl font-semibold tracking-tight sm:text-[44px] sm:leading-[1.08]" style={{ "--d": "80ms" } as React.CSSProperties}>Det som tog en kväll tar nu några minuter.</h2>
@@ -196,7 +194,7 @@ export default function Landing() {
             <p className="reveal mt-4 text-white/50" style={{ "--d": "160ms" } as React.CSSProperties}>Alla priser per månad, exklusive moms.</p>
           </div>
           <div className="mt-16 grid gap-4 lg:grid-cols-3">
-            {PLANS.map((p, i) => (
+            {PLAN_CARDS.map((p, i) => (
               <div key={p.id} className={cn("reveal relative flex flex-col rounded-3xl border p-8 will-change-transform transition-[transform,border-color] duration-500 ease-out hover:-translate-y-1",
                 p.featured ? "border-indigo-400/40 bg-gradient-to-b from-indigo-500/[0.12] to-white/[0.02] shadow-[0_30px_80px_-40px_rgba(99,102,241,0.8)]" : "border-white/[0.08] bg-white/[0.02] hover:border-white/20")} style={{ "--d": `${i * 90}ms` } as React.CSSProperties}>
                 {p.featured && <span className="absolute -top-3 left-8 rounded-full bg-indigo-500 px-3 py-1 font-mono text-[10.5px] uppercase tracking-[0.12em]">Populärast</span>}

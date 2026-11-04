@@ -45,13 +45,18 @@ Deno.serve(async (req) => {
       current_period_end: obj.current_period_end ? new Date(obj.current_period_end * 1000).toISOString()
         : obj.items?.data?.[0]?.current_period_end ? new Date(obj.items.data[0].current_period_end * 1000).toISOString() : null,
     };
-    // Planen avgörs av priset (fungerar även när kunden byter plan i kundportalen)
-    const priceId = obj.items?.data?.[0]?.price?.id;
-    const { data: plan } = priceId
-      ? await admin.from("plans").select("id").eq("stripe_price_id", priceId).maybeSingle()
-      : { data: null };
-    if (plan?.id) update.plan_id = plan.id;
-    else if (obj.metadata?.plan_id) update.plan_id = obj.metadata.plan_id;
+    // Planen avgörs av priset (fungerar även när kunden byter plan i kundportalen).
+    // 1) plan_id i prisets metadata – fungerar även för äldre, arkiverade priser
+    // 2) aktuellt pris i plans.stripe_price_id  3) prenumerationens metadata
+    const price = obj.items?.data?.[0]?.price;
+    const validPlans = ["starter", "professional", "business"];
+    let planId: string | null = validPlans.includes(price?.metadata?.plan_id) ? price.metadata.plan_id : null;
+    if (!planId && price?.id) {
+      const { data: plan } = await admin.from("plans").select("id").eq("stripe_price_id", price.id).maybeSingle();
+      planId = plan?.id ?? null;
+    }
+    if (!planId && validPlans.includes(obj.metadata?.plan_id)) planId = obj.metadata.plan_id;
+    if (planId) update.plan_id = planId;
     if (org && obj.customer) update.stripe_customer_id = obj.customer;
     const q = admin.from("subscriptions").update(update);
     await (org ? q.eq("organization_id", org) : q.eq("stripe_customer_id", obj.customer));

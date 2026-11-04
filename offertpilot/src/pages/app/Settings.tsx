@@ -8,6 +8,7 @@ import { callFunction, errorMessage } from "@/lib/api";
 import { INDUSTRIES } from "@/lib/labels";
 import type { Organization, OrgSettings } from "@/lib/types";
 import { formatSEK } from "@shared/pricing.ts";
+import { planById, priceInclVat } from "@shared/plans.ts";
 import { cn, downloadBlob, formatDate } from "@/lib/utils";
 import { useOrg } from "@/hooks/useOrg";
 import { useAuth } from "@/hooks/useAuth";
@@ -371,11 +372,6 @@ function BillingTab() {
     }
   };
   const statusLabel: Record<string, string> = { trialing: "Provperiod", active: "Aktiv", past_due: "Betalning saknas", canceled: "Avslutad", incomplete: "Ofullständig" };
-  const FEATURES: Record<string, string[]> = {
-    starter: ["1 användare", "30 AI-assisterade leads/mån", "Offertgenerering", "Grundläggande översikt"],
-    professional: ["Upp till 5 användare", "150 AI-assisterade leads/mån", "AI-skrivna uppföljningar", "Analys och diagram", "Egen profilfärg i offerter"],
-    business: ["Upp till 25 användare", "600 AI-assisterade leads/mån", "Avancerade arbetsflöden", "Teamsamarbete", "Prioriterad support", "Fler integrationer"],
-  };
   return (
     <div className="space-y-6">
       {usage && (
@@ -394,11 +390,12 @@ function BillingTab() {
         {plans.data?.map((p) => {
           const current = usage?.plan_id === p.id;
           return (
-            <Card key={p.id} className={cn("flex flex-col p-6", p.id === "professional" && "border-brand/40 shadow-[0_12px_40px_-16px_hsl(var(--brand)/0.4)]")}>
-              <div className="flex items-center justify-between"><p className="font-semibold">{p.name}</p>{p.id === "professional" && <Badge tone="brand">Populärast</Badge>}</div>
+            <Card key={p.id} className={cn("flex flex-col p-6", planById(p.id)?.featured && "border-brand/40 shadow-[0_12px_40px_-16px_hsl(var(--brand)/0.4)]")}>
+              <div className="flex items-center justify-between"><p className="font-semibold">{p.name}</p>{planById(p.id)?.featured && <Badge tone="brand">Populärast</Badge>}</div>
               <p className="mt-4"><span className="text-3xl font-semibold tracking-tight">{formatSEK(p.price_sek)}</span><span className="text-sm text-muted-foreground"> /mån exkl. moms</span></p>
-              <ul className="mt-5 flex-1 space-y-2 text-sm">{(FEATURES[p.id] ?? []).map((f) => <li key={f} className="flex gap-2"><Check className="mt-0.5 size-4 shrink-0 text-brand" />{f}</li>)}</ul>
-              <Button className="mt-6" variant={current ? "outline" : p.id === "professional" ? "brand" : "default"} disabled={!isAdmin || (current && usage?.status === "active")} loading={busy === p.id}
+              <p className="mt-1 text-xs text-muted-foreground">{formatSEK(priceInclVat(p.price_sek), { decimals: true })} inkl. 25 % moms</p>
+              <ul className="mt-5 flex-1 space-y-2 text-sm">{(planById(p.id)?.features ?? []).map((f) => <li key={f} className="flex gap-2"><Check className="mt-0.5 size-4 shrink-0 text-brand" />{f}</li>)}</ul>
+              <Button className="mt-6" variant={current ? "outline" : planById(p.id)?.featured ? "brand" : "default"} disabled={!isAdmin || (current && usage?.status === "active")} loading={busy === p.id}
                 onClick={() => go({ action: "checkout", plan_id: p.id }, p.id)}>
                 {current ? (usage?.status === "active" ? "Nuvarande plan" : "Aktivera") : "Välj plan"}
               </Button>
