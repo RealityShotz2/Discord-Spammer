@@ -1,4 +1,4 @@
-# OffertPilot AI
+# Offertfabriken
 
 AI-driven säljassistent för svenska små och medelstora företag: tar emot förfrågningar, analyserar dem, tar fram offertutkast med företagets **egna** priser, låter ägaren godkänna och följer upp affären.
 
@@ -93,7 +93,7 @@ node scripts/e2e-ui.mjs      # 15 steg i webbläsaren (Playwright) – hela anv�
 
 | Variabel | Krävs | Beskrivning |
 |---|---|---|
-| `APP_URL` | ja | Publik URL till appen (länkar i e-post), t.ex. `https://app.offertpilot.se` |
+| `APP_URL` | ja | Publik URL till appen (länkar i e-post), t.ex. `https://app.offertfabriken.se` |
 | `ALLOWED_ORIGINS` | rek. | Kommaseparerade origins för CORS (standard `*`) |
 | `RATE_LIMIT_SALT` | rek. | Salt för hashning av IP-adresser |
 | `ANTHROPIC_API_KEY` | ett av | Claude (standardmodell `claude-sonnet-5-5`) |
@@ -132,7 +132,7 @@ Planpriser och gränser ändras i tabellen `plans`, inte i koden.
 - **Aviseringar** "kundsvar på offert" och "daglig sammanfattning" är förberedda i inställningarna men skickas inte än.
 - **Logotypuppladdning** saknas (logotyp anges som https-URL). PDF:en visar logotyp-URL:en i dag inte som bild.
 - **ROT-taket** (50 000 kr/person/år) beräknas inte, utan visas som en upplysning. ROT-procenten är konfigurerbar och måste hållas aktuell.
-- **Integritetspolicy och villkor** är utkast med platshållare och måste granskas juridiskt. Kontaktadressen `hej@offertpilot.se` på marknadssidan är en platshållare.
+- **Integritetspolicy och villkor** är utkast med platshållare och måste granskas juridiskt. Kontaktadressen `hej@offertfabriken.se` på marknadssidan är en platshållare.
 - Riktiga AI-, Resend- och Stripe-anrop har inte körts i den här miljön (inga nycklar). De är implementerade enligt API:erna, men demolägena är det som har testats end-to-end.
 - PDF använder standardtypsnittet Helvetica (WinAnsi). Tecken utanför den teckenuppsättningen (t.ex. emoji) ersätts med `?`.
 

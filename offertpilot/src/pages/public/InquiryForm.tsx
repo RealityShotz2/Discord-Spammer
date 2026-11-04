@@ -92,7 +92,7 @@ export default function InquiryForm() {
               </label>
               {error && <p role="alert" className="mt-4 text-sm text-destructive">{error}</p>}
               <Button type="submit" variant="brand" size="lg" className="mt-6 w-full" loading={busy} style={brand ? { background: brand } : undefined}>Skicka förfrågan</Button>
-              <p className="mt-5 flex items-center justify-center gap-1.5 text-[11px] text-muted-foreground"><ShieldCheck className="size-3.5" />Skyddat formulär · <LogoMark className="size-3.5" />OffertPilot AI</p>
+              <p className="mt-5 flex items-center justify-center gap-1.5 text-[11px] text-muted-foreground"><ShieldCheck className="size-3.5" />Skyddat formulär · <LogoMark className="size-3.5" />Offertfabriken</p>
             </form>
           )}
       </div>

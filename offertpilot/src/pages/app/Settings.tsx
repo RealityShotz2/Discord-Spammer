@@ -259,7 +259,7 @@ function EmailTab() {
   return (
     <div className="space-y-6">
       {!isAdmin && <AdminOnly />}
-      <Section title="Avsändare" description="Gäller offerter, svar och uppföljningar som skickas från OffertPilot." footer={isAdmin && <Button variant="brand" loading={busy} onClick={() => save(["email_from_name", "email_reply_to"])}>Spara</Button>}>
+      <Section title="Avsändare" description="Gäller offerter, svar och uppföljningar som skickas från Offertfabriken." footer={isAdmin && <Button variant="brand" loading={busy} onClick={() => save(["email_from_name", "email_reply_to"])}>Spara</Button>}>
         <fieldset disabled={!isAdmin} className="grid gap-4 sm:grid-cols-2">
           <Field label="Avsändarnamn"><Input value={s.email_from_name ?? ""} onChange={(e) => setS({ ...s, email_from_name: e.target.value })} /></Field>
           <Field label="Svarsadress (reply-to)" hint="Kundens svar hamnar här"><Input type="email" value={s.email_reply_to ?? ""} onChange={(e) => setS({ ...s, email_reply_to: e.target.value })} /></Field>
@@ -314,7 +314,7 @@ function SecurityTab() {
   const exportAll = async () => {
     const { data, error } = await supabase.rpc("export_organization_data", { org: org!.id });
     if (error) return toast.error(errorMessage(error));
-    downloadBlob(JSON.stringify(data, null, 2), `offertpilot-export-${new Date().toISOString().slice(0, 10)}.json`, "application/json");
+    downloadBlob(JSON.stringify(data, null, 2), `offertfabriken-export-${new Date().toISOString().slice(0, 10)}.json`, "application/json");
     toast.success("Exporten är nedladdad");
   };
   return (

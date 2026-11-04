@@ -66,7 +66,7 @@ export async function renderQuotePdf(args: { quote: PdfQuote; items: PdfItem[]; 
   const doc = await PDFDocument.create();
   doc.setTitle(`Offert ${quote.number} – ${org.name}`);
   doc.setAuthor(org.name);
-  doc.setCreator("OffertPilot AI");
+  doc.setCreator("Offertfabriken");
   doc.setLanguage("sv-SE");
   const font = await doc.embedFont(StandardFonts.Helvetica);
   const bold = await doc.embedFont(StandardFonts.HelveticaBold);

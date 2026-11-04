@@ -37,7 +37,7 @@ export async function sendEmail(input: EmailInput): Promise<EmailResult> {
   const key = Deno.env.get("RESEND_API_KEY");
   const from = Deno.env.get("EMAIL_FROM"); // t.ex. "offert@dindoman.se"
   if (!key || !from) return { status: "demo" };
-  const fromName = (input.fromName ?? "OffertPilot AI").replace(/[<>"\r\n]/g, "").slice(0, 80);
+  const fromName = (input.fromName ?? "Offertfabriken").replace(/[<>"\r\n]/g, "").slice(0, 80);
   try {
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",

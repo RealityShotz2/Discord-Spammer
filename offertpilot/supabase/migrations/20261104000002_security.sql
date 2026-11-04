@@ -1,4 +1,4 @@
--- OffertPilot AI – behörigheter och Row Level Security
+-- Offertfabriken – behörigheter och Row Level Security
 -- Modell: anon har ingen direkt tabellåtkomst (publika flöden går via edge functions).
 -- authenticated får explicita rättigheter och filtreras av RLS per organisation.
 

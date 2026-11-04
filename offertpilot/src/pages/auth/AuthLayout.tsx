@@ -13,7 +13,7 @@ export function AuthLayout({ title, subtitle, children, footer }: { title: strin
           <div className="mt-8">{children}</div>
           {footer && <div className="mt-8 text-sm text-muted-foreground">{footer}</div>}
         </div>
-        <p className="font-mono text-[11px] text-muted-foreground">© {new Date().getFullYear()} OffertPilot AI · <Link to="/integritet" className="hover:text-foreground">Integritet</Link></p>
+        <p className="font-mono text-[11px] text-muted-foreground">© {new Date().getFullYear()} Offertfabriken · <Link to="/integritet" className="hover:text-foreground">Integritet</Link></p>
       </div>
       <div className="relative hidden overflow-hidden bg-[#070a16] lg:block">
         <div className="absolute inset-0 opacity-[0.35] [background-image:linear-gradient(to_right,rgba(255,255,255,.06)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,.06)_1px,transparent_1px)] [background-size:56px_56px]" />

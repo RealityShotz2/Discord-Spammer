@@ -1,4 +1,4 @@
-/* OffertPilot AI – inbäddning av förfrågningsformulär. Användning:
+/* Offertfabriken – inbäddning av förfrågningsformulär. Användning:
    <div id="offertpilot-form"></div>
    <script src="https://DIN-APP/embed.js" data-form="FORMULÄRNYCKEL" async></script> */
 (function () {

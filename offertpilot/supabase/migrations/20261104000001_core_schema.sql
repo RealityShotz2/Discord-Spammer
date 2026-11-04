@@ -1,4 +1,4 @@
--- OffertPilot AI – kärnschema
+-- Offertfabriken – kärnschema
 -- Alla organisationsägda tabeller har organization_id och isoleras via RLS (se 0002).
 -- Barntabeller använder sammansatta främmande nycklar (id, organization_id) så att en rad
 -- aldrig kan kopplas till en förälder i en annan organisation.

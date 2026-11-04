@@ -246,11 +246,11 @@ otp_expiry = 3600
 # sender_name = "Admin"
 
 [auth.email.template.confirmation]
-subject = "Bekräfta din e-postadress – OffertPilot AI"
+subject = "Bekräfta din e-postadress – Offertfabriken"
 content_path = "./supabase/templates/confirmation.html"
 
 [auth.email.template.recovery]
-subject = "Återställ ditt lösenord – OffertPilot AI"
+subject = "Återställ ditt lösenord – Offertfabriken"
 content_path = "./supabase/templates/recovery.html"
 
 # Uncomment to customize notification email template

@@ -44,7 +44,7 @@ const PLANS = [
 const FAQ = [
   ["Hittar AI:n på priser?", "Nej. AI:n väljer bara tjänster ur din egen katalog och servern hämtar priset därifrån. Saknas ett pris markeras raden och offerten kan inte godkännas förrän du fyllt i det."],
   ["Skickas något automatiskt till mina kunder?", "Nej. Varje offert och varje uppföljning kräver att du eller en administratör godkänner den. Automatiska utskick kan bli ett val i framtiden, men är alltid avstängt som standard."],
-  ["Hur fungerar webbformuläret?", "Du kopierar en kodrad till din webbplats. Förfrågningar skapar en lead direkt i OffertPilot, skyddat mot spam med validering, honeypot och begränsning av antal förfrågningar."],
+  ["Hur fungerar webbformuläret?", "Du kopierar en kodrad till din webbplats. Förfrågningar skapar en lead direkt i Offertfabriken, skyddat mot spam med validering, honeypot och begränsning av antal förfrågningar."],
   ["Var lagras min data?", "I en PostgreSQL-databas där varje företags data är isolerad med Row Level Security. Du kan exportera eller radera kunddata när som helst för att uppfylla GDPR."],
   ["Kan jag använda det med ROT-avdrag?", "Ja. Markera arbetskostnader i din prislista så räknar offerten fram ett preliminärt ROT-avdrag med den procentsats du anger."],
   ["Vad räknas som en AI-assisterad lead?", "En lead där AI har använts minst en gång under månaden – oavsett hur många analyser, utkast eller svar du skapar för just den förfrågan."],
@@ -74,7 +74,7 @@ export default function Landing() {
       {/* Navigering */}
       <header className="fixed inset-x-0 top-0 z-50 border-b border-white/[0.06] bg-[#05070f]/70 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-[1240px] items-center justify-between px-4 sm:px-6">
-          <Link to="/" aria-label="OffertPilot AI – startsida"><Logo /></Link>
+          <Link to="/" aria-label="Offertfabriken – startsida"><Logo /></Link>
           <nav className="hidden items-center gap-8 text-[13.5px] text-white/60 md:flex" aria-label="Huvudmeny">
             <a href="#sa-fungerar-det" className="transition hover:text-white">Så fungerar det</a>
             <a href="#fordelar" className="transition hover:text-white">Fördelar</a>
@@ -108,7 +108,7 @@ export default function Landing() {
             </p>
             <div className="reveal mt-10 flex flex-col gap-3 sm:flex-row" style={{ "--d": "240ms" } as React.CSSProperties}>
               <Link to="/registrera" className={cn(cta, "bg-indigo-500 text-white shadow-[0_12px_40px_-12px_rgba(99,102,241,0.9)] hover:bg-indigo-400 hover:shadow-[0_18px_48px_-12px_rgba(99,102,241,1)]")}>
-                Kom igång med OffertPilot AI<ArrowRight className="size-4 transition-transform duration-500 ease-out group-hover:translate-x-1" />
+                Kom igång med Offertfabriken<ArrowRight className="size-4 transition-transform duration-500 ease-out group-hover:translate-x-1" />
               </Link>
               <a href="#sa-fungerar-det" className={cn(cta, "border border-white/15 bg-white/[0.03] text-white/90 hover:bg-white/[0.07]")}>Se hur det fungerar</a>
             </div>
@@ -123,7 +123,7 @@ export default function Landing() {
           <div>
             <p className="reveal font-mono text-[11px] uppercase tracking-[0.14em] text-indigo-300">Från förfrågan till offert</p>
             <h2 className="reveal mt-4 text-3xl font-semibold tracking-tight sm:text-[44px] sm:leading-[1.08]" style={{ "--d": "80ms" } as React.CSSProperties}>Det som tog en kväll tar nu några minuter.</h2>
-            <p className="reveal mt-5 max-w-md text-[16px] leading-relaxed text-white/55" style={{ "--d": "160ms" } as React.CSSProperties}>OffertPilot läser förfrågan, förstår vad kunden vill och sätter ihop ett utkast med dina tjänster och priser. Du granskar, justerar och godkänner.</p>
+            <p className="reveal mt-5 max-w-md text-[16px] leading-relaxed text-white/55" style={{ "--d": "160ms" } as React.CSSProperties}>Offertfabriken läser förfrågan, förstår vad kunden vill och sätter ihop ett utkast med dina tjänster och priser. Du granskar, justerar och godkänner.</p>
             <ul className="mt-8 space-y-3">
               {["Analys och följdfrågor direkt när förfrågan kommer in", "Offertrader med mängder hämtade ur kundens text", "Tydliga varningar när något saknas"].map((x, i) => (
                 <li key={x} className="reveal flex gap-3 text-[15px] text-white/75" style={{ "--d": `${200 + i * 80}ms` } as React.CSSProperties}><Check className="mt-0.5 size-4 shrink-0 text-indigo-300" />{x}</li>
@@ -217,7 +217,7 @@ export default function Landing() {
           <div>
             <p className="reveal font-mono text-[11px] uppercase tracking-[0.14em] text-indigo-300">Vanliga frågor</p>
             <h2 className="reveal mt-4 text-3xl font-semibold tracking-tight sm:text-[44px] sm:leading-[1.08]" style={{ "--d": "80ms" } as React.CSSProperties}>Bra att veta</h2>
-            <p className="reveal mt-4 max-w-sm text-white/50" style={{ "--d": "160ms" } as React.CSSProperties}>Hittar du inte svaret? Mejla oss på <a href="mailto:hej@offertpilot.se" className="text-white underline-offset-4 hover:underline">hej@offertpilot.se</a>.</p>
+            <p className="reveal mt-4 max-w-sm text-white/50" style={{ "--d": "160ms" } as React.CSSProperties}>Hittar du inte svaret? Mejla oss på <a href="mailto:hej@offertfabriken.se" className="text-white underline-offset-4 hover:underline">hej@offertfabriken.se</a>.</p>
           </div>
           <div className="reveal border-t border-white/10" style={{ "--d": "120ms" } as React.CSSProperties}>{FAQ.map(([q, a]) => <FaqItem key={q} q={q} a={a} />)}</div>
         </div>
@@ -228,8 +228,8 @@ export default function Landing() {
         <div className="reveal relative mx-auto max-w-[1240px] overflow-hidden rounded-[32px] border border-white/10 bg-gradient-to-br from-indigo-600/30 via-[#0b0f22] to-violet-700/20 px-6 py-20 text-center sm:px-16">
           <div className="pointer-events-none absolute -left-24 -top-24 size-80 rounded-full bg-indigo-500/30 blur-[100px]" />
           <h2 className="relative mx-auto max-w-2xl text-3xl font-semibold tracking-tight sm:text-5xl">Svara på nästa förfrågan med en färdig offert.</h2>
-          <p className="relative mx-auto mt-5 max-w-lg text-white/60">Kom igång på några minuter. Lägg in dina tjänster och priser – resten sköter OffertPilot.</p>
-          <Link to="/registrera" className={cn(cta, "relative mt-10 bg-white text-[#05070f] hover:shadow-[0_18px_48px_-12px_rgba(255,255,255,0.5)]")}>Kom igång med OffertPilot AI<ArrowRight className="size-4 transition-transform duration-500 ease-out group-hover:translate-x-1" /></Link>
+          <p className="relative mx-auto mt-5 max-w-lg text-white/60">Kom igång på några minuter. Lägg in dina tjänster och priser – resten sköter Offertfabriken.</p>
+          <Link to="/registrera" className={cn(cta, "relative mt-10 bg-white text-[#05070f] hover:shadow-[0_18px_48px_-12px_rgba(255,255,255,0.5)]")}>Kom igång med Offertfabriken<ArrowRight className="size-4 transition-transform duration-500 ease-out group-hover:translate-x-1" /></Link>
         </div>
       </section>
 
@@ -242,10 +242,10 @@ export default function Landing() {
           <div className="grid grid-cols-2 gap-10 text-sm sm:grid-cols-3">
             <div className="space-y-3"><p className="font-mono text-[11px] uppercase tracking-[0.14em] text-white/30">Produkt</p><a href="#sa-fungerar-det" className="block text-white/60 hover:text-white">Så fungerar det</a><a href="#priser" className="block text-white/60 hover:text-white">Priser</a><Link to="/logga-in" className="block text-white/60 hover:text-white">Logga in</Link></div>
             <div className="space-y-3"><p className="font-mono text-[11px] uppercase tracking-[0.14em] text-white/30">Juridik</p><Link to="/integritet" className="block text-white/60 hover:text-white">Integritetspolicy</Link><Link to="/villkor" className="block text-white/60 hover:text-white">Användarvillkor</Link></div>
-            <div className="space-y-3"><p className="font-mono text-[11px] uppercase tracking-[0.14em] text-white/30">Kontakt</p><a href="mailto:hej@offertpilot.se" className="flex items-center gap-2 text-white/60 hover:text-white"><Mail className="size-3.5" />hej@offertpilot.se</a><p className="text-white/40">Sverige</p></div>
+            <div className="space-y-3"><p className="font-mono text-[11px] uppercase tracking-[0.14em] text-white/30">Kontakt</p><a href="mailto:hej@offertfabriken.se" className="flex items-center gap-2 text-white/60 hover:text-white"><Mail className="size-3.5" />hej@offertfabriken.se</a><p className="text-white/40">Sverige</p></div>
           </div>
         </div>
-        <p className="mx-auto mt-12 max-w-[1240px] font-mono text-[11px] text-white/25">© {new Date().getFullYear()} OffertPilot AI</p>
+        <p className="mx-auto mt-12 max-w-[1240px] font-mono text-[11px] text-white/25">© {new Date().getFullYear()} Offertfabriken</p>
       </footer>
     </div>
   );

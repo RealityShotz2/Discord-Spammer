@@ -128,7 +128,7 @@ export default function PublicQuote() {
             {org.email && <a href={`mailto:${org.email}`} className="flex items-center gap-1.5 hover:text-foreground"><Mail className="size-3.5" />{org.email}</a>}
             {org.phone && <a href={`tel:${org.phone}`} className="flex items-center gap-1.5 hover:text-foreground"><Phone className="size-3.5" />{org.phone}</a>}
           </div>
-          <span className="flex items-center gap-1.5"><LogoMark className="size-4" />Skickad med OffertPilot AI</span>
+          <span className="flex items-center gap-1.5"><LogoMark className="size-4" />Skickad med Offertfabriken</span>
         </footer>
       </article>
     </div>

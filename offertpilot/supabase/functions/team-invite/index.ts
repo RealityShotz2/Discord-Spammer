@@ -22,11 +22,11 @@ Deno.serve(handler(["POST"], async (req) => {
 
   const { data: org } = await user.db.from("organizations").select("name").eq("id", organization_id).single();
   const link = `${appUrl()}/registrera?email=${encodeURIComponent(email)}&inbjudan=1`;
-  const text = `Hej!\n\nDu har blivit inbjuden att gå med i ${org?.name ?? "ett företag"} på OffertPilot AI. Skapa ett konto (eller logga in) med den här e-postadressen så kopplas du till företaget automatiskt.\n\nInbjudan gäller i 14 dagar.`;
+  const text = `Hej!\n\nDu har blivit inbjuden att gå med i ${org?.name ?? "ett företag"} på Offertfabriken. Skapa ett konto (eller logga in) med den här e-postadressen så kopplas du till företaget automatiskt.\n\nInbjudan gäller i 14 dagar.`;
   if (!emailConfigured()) {
     return json(req, { invited: true, demo: true, link, message: "Demoläge: e-post är inte konfigurerad. Skicka länken till din kollega själv." });
   }
-  const res = await sendEmail({ to: email, subject: `Inbjudan till ${org?.name ?? "OffertPilot AI"}`, text: `${text}\n\n${link}`, html: textToHtml(text, { cta: { label: "Gå med", url: link } }) });
+  const res = await sendEmail({ to: email, subject: `Inbjudan till ${org?.name ?? "Offertfabriken"}`, text: `${text}\n\n${link}`, html: textToHtml(text, { cta: { label: "Gå med", url: link } }) });
   if (res.status === "failed") throw new HttpError(502, "Inbjudan sparades men e-posten kunde inte skickas");
   return json(req, { invited: true, demo: false });
 }));

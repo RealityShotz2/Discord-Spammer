@@ -117,7 +117,7 @@ function FormTab() {
   return (
     <div className="grid gap-6 lg:grid-cols-2">
       <Card>
-        <CardHeader title="Bädda in på din webbplats" description="Förfrågningar skapar en lead direkt i OffertPilot." />
+        <CardHeader title="Bädda in på din webbplats" description="Förfrågningar skapar en lead direkt i Offertfabriken." />
         <CardBody className="space-y-5">
           {[["Skript (rekommenderas, anpassar höjden)", script], ["Iframe", iframe], ["Direktlänk", url]].map(([label, code]) => (
             <div key={label}>

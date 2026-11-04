@@ -66,7 +66,7 @@ Deno.serve(handler(["GET", "POST"], async (req) => {
       await sendEmail({
         to: org.email,
         subject: `Ny förfrågan: ${p.service || "från webbplatsen"}`,
-        text: `Du har fått en ny förfrågan från ${p.name} via webbformuläret.\n\nÖppna OffertPilot för att se förfrågan och låta AI analysera den:\n${appUrl()}/app/leads/${data.lead_id}`,
+        text: `Du har fått en ny förfrågan från ${p.name} via webbformuläret.\n\nÖppna Offertfabriken för att se förfrågan och låta AI analysera den:\n${appUrl()}/app/leads/${data.lead_id}`,
       }).catch((e) => console.error("notify_failed", e));
     }
   }

@@ -1,4 +1,4 @@
--- OffertPilot AI – affärslogik på serversidan
+-- Offertfabriken – affärslogik på serversidan
 -- All känslig logik (godkännande, summering, kvoter, numrering) körs här eller i edge functions.
 
 -- ---------------------------------------------------------------------------
