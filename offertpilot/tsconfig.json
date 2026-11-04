@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "skipLibCheck": true,
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "isolatedModules": true,
+    "resolveJsonModule": true,
+    "types": ["vite/client", "node"],
+    "paths": { "@/*": ["./src/*"], "@shared/*": ["./supabase/functions/_shared/*"] }
+  },
+  "include": ["src", "vite.config.ts", "supabase/functions/_shared/pricing.ts", "supabase/functions/_shared/quote-pdf.ts", "supabase/functions/_shared/quote-data.ts", "supabase/functions/_shared/ai/quote-assembly.ts", "supabase/functions/_shared/ai/schemas.ts", "supabase/functions/_shared/ai/context.ts", "supabase/functions/_shared/ai/demo.ts"]
+}

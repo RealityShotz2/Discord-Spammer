@@ -1,0 +1,14 @@
+node_modules
+dist
+.env
+.env.local
+.env.*.local
+supabase/.env*
+supabase/functions/.env*
+supabase/functions/.local-ca.pem
+supabase/.temp
+supabase/.branches
+test-results
+*.log
+.vercel
+.env*
