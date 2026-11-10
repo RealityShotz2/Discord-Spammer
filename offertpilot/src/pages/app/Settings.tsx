@@ -20,7 +20,7 @@ import { Dialog } from "@/components/ui/dialog";
 import { passwordValid } from "../auth/AuthLayout";
 
 const TABS = [
-  ["foretag", "Företag"], ["team", "Team"], ["ai", "AI-beteende"], ["offert", "Offert & priser"], ["uppfoljning", "Uppföljning"],
+  ["foretag", "Företag"], ["team", "Team"], ["ai", "AI-beteende"], ["offert", "Offert & priser"], ["order", "Order & kundportal"], ["uppfoljning", "Uppföljning"],
   ["epost", "E-post"], ["aviseringar", "Aviseringar"], ["sakerhet", "Säkerhet & data"], ["fakturering", "Fakturering"],
 ] as const;
 
@@ -225,6 +225,33 @@ function QuoteTab() {
   );
 }
 
+function OrderTab() {
+  const { s, setS, save, busy, isAdmin } = useSettingsForm();
+  if (!s) return <Skeleton className="h-64" />;
+  return (
+    <div className="space-y-6">
+      {!isAdmin && <AdminOnly />}
+      <Section title="Order och avtalskunder" description="Gäller beställningar, återkommande order och påminnelser. Din tjänstekatalog och offertflödet påverkas inte."
+        footer={isAdmin && <Button variant="brand" loading={busy} onClick={() => {
+          if (!/^[A-Z0-9-]{1,12}$/.test(s.order_number_prefix)) return toast.error("Prefixet får bara innehålla versaler, siffror och bindestreck (max 12)");
+          save(["order_number_prefix", "inactive_customer_days", "recurring_reminder_days"]);
+        }}>Spara</Button>}>
+        <fieldset disabled={!isAdmin} className="grid gap-4 sm:grid-cols-2">
+          <Field label="Prefix för ordernummer" hint="T.ex. ORD → ORD-1001"><Input value={s.order_number_prefix} onChange={(e) => setS({ ...s, order_number_prefix: e.target.value.toUpperCase() })} /></Field>
+          <Field label="Kund räknas som inaktiv efter (dagar)" hint="Utan order. Du får en påminnelse att höra av dig."><Input type="number" min={7} max={365} value={s.inactive_customer_days} onChange={(e) => setS({ ...s, inactive_customer_days: Number(e.target.value) })} /></Field>
+          <Field label="Påminn om återkommande order (dagar innan)"><Input type="number" min={0} max={14} value={s.recurring_reminder_days} onChange={(e) => setS({ ...s, recurring_reminder_days: Number(e.target.value) })} /></Field>
+        </fieldset>
+      </Section>
+      <Section title="Kundportal" description="Låt avtalskunder logga in, se sina avtalade priser, lägga och upprepa beställningar och ladda ner orderbekräftelser. Kunder ser aldrig interna anteckningar eller andra kunders data.">
+        <div className="flex items-center justify-between gap-4 rounded-xl border bg-muted/30 p-4">
+          <div><p className="text-sm font-medium">Aktivera kundportalen</p><p className="text-xs text-muted-foreground">Bjud sedan in kontaktpersoner från fliken Kundportal på respektive kund. Portalen finns på {window.location.origin}/portal.</p></div>
+          <Switch label="Aktivera kundportalen" checked={s.portal_enabled} disabled={!isAdmin || busy} onCheckedChange={(v) => { s.portal_enabled = v; setS({ ...s, portal_enabled: v }); save(["portal_enabled"]); }} />
+        </div>
+      </Section>
+    </div>
+  );
+}
+
 function FollowUpTab() {
   const { s, setS, save, busy, isAdmin } = useSettingsForm();
   const [days, setDays] = useState("");
@@ -412,7 +439,7 @@ export default function Settings() {
   const { tab = "foretag" } = useParams();
   const navigate = useNavigate();
   const content: Record<string, ReactNode> = {
-    foretag: <CompanyTab />, team: <TeamTab />, ai: <AiTab />, offert: <QuoteTab />, uppfoljning: <FollowUpTab />,
+    foretag: <CompanyTab />, team: <TeamTab />, ai: <AiTab />, offert: <QuoteTab />, order: <OrderTab />, uppfoljning: <FollowUpTab />,
     epost: <EmailTab />, aviseringar: <NotificationsTab />, sakerhet: <SecurityTab />, fakturering: <BillingTab />,
   };
   return (

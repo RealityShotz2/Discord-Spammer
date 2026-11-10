@@ -15,7 +15,15 @@ import { Badge, EmptyState, PageHeader, Skeleton } from "@/components/ui/misc";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog } from "@/components/ui/dialog";
 
-const KIND = { lead_response: "Obesvarad förfrågan", quote_followup: "Offertuppföljning", custom: "Egen uppgift" };
+const KIND: Record<FollowUpTask["kind"], string> = {
+  lead_response: "Obesvarad förfrågan", quote_followup: "Offertuppföljning", custom: "Egen uppgift", agreement_renewal: "Avtal löper ut",
+  recurring_order: "Återkommande order", inactive_customer: "Inaktiv kund", order_approval: "Order att godkänna",
+};
+/** Kund och länk för en uppgift – leads för offertflödet, kund/order för avtalskunder. */
+const taskCustomer = (t: FollowUpTask) => t.leads?.customers ?? t.customers ?? null;
+const taskLink = (t: FollowUpTask) => t.lead_id ? `/app/leads/${t.lead_id}` : t.order_id ? `/app/bestallningar/${t.order_id}` : t.customer_id ? `/app/kunder/${t.customer_id}` : "/app/uppfoljning";
+/** Uppgifter som hanteras genom att öppna ordern, inte genom att skicka meddelande. */
+const OPEN_ONLY = new Set<FollowUpTask["kind"]>(["custom", "recurring_order", "order_approval"]);
 
 function TaskRow({ t, onOpen }: { t: FollowUpTask; onOpen: (t: FollowUpTask) => void }) {
   const invalidate = useInvalidate();
@@ -36,10 +44,10 @@ function TaskRow({ t, onOpen }: { t: FollowUpTask; onOpen: (t: FollowUpTask) => 
           <p className="text-sm font-medium">{t.title}</p>
           <Badge>{KIND[t.kind]}</Badge>
           {t.draft_body && t.status === "pending" && <Badge tone="brand"><Sparkles className="size-3" />Utkast klart</Badge>}
-          {t.leads?.customers?.opted_out && <Badge tone="danger">Kunden har avböjt</Badge>}
+          {taskCustomer(t)?.opted_out && <Badge tone="danger">Kunden har avböjt</Badge>}
         </div>
         <p className="mt-0.5 text-xs text-muted-foreground">
-          <Link to={`/app/leads/${t.lead_id}`} className="hover:text-foreground">{t.leads?.customers?.name}</Link>
+          <Link to={taskLink(t)} className="hover:text-foreground">{taskCustomer(t)?.name}{t.orders ? ` · ${t.orders.number}` : ""}</Link>
           {" · "}{t.status === "pending" ? <span className={cn(overdue && "font-medium text-warning")}>{overdue ? `Försenad sedan ${relativeTime(t.due_at).replace(/^för /, "")}` : `Förfaller ${formatDate(t.due_at)}`}</span> : `Avslutad ${relativeTime(t.completed_at)}`}
         </p>
       </div>
@@ -47,7 +55,8 @@ function TaskRow({ t, onOpen }: { t: FollowUpTask; onOpen: (t: FollowUpTask) => 
         <div className="flex gap-2">
           <Button size="sm" variant="ghost" onClick={() => close("dismissed")} aria-label="Ignorera"><X /></Button>
           <Button size="sm" variant="outline" onClick={() => close("done")}><CheckCircle2 />Klar</Button>
-          {t.kind !== "custom" && <Button size="sm" variant="brand" onClick={() => onOpen(t)}><Send />Följ upp</Button>}
+          {OPEN_ONLY.has(t.kind) ? (t.order_id && <Button size="sm" variant="brand" asChild><Link to={taskLink(t)}>Öppna order</Link></Button>)
+            : <Button size="sm" variant="brand" onClick={() => onOpen(t)}><Send />Följ upp</Button>}
         </div>
       )}
     </Card>
@@ -62,9 +71,10 @@ function ComposeDialog({ task, onClose }: { task: FollowUpTask | null; onClose: 
   const [body, setBody] = useState("");
   const [busy, setBusy] = useState(false);
   const aiAllowed = !!usage?.features.ai_followups;
+  const customer = task ? taskCustomer(task) : null;
 
   useEffect(() => {
-    setSubject(task?.draft_subject ?? (task?.quotations ? `Uppföljning av offert ${task.quotations.number}` : "Angående din förfrågan"));
+    setSubject(task?.draft_subject ?? (task?.quotations ? `Uppföljning av offert ${task.quotations.number}` : task?.kind === "agreement_renewal" ? "Förnyelse av vårt avtal" : task?.kind === "inactive_customer" ? "Dags att beställa igen?" : "Angående din förfrågan"));
     setBody(task?.draft_body ?? "");
   }, [task]);
 
@@ -84,8 +94,8 @@ function ComposeDialog({ task, onClose }: { task: FollowUpTask | null; onClose: 
   };
 
   return (
-    <Dialog open={!!task} onOpenChange={(o) => !o && onClose()} title="Följ upp med kunden" description={`Till ${task?.leads?.customers?.email ?? "kunden saknar e-post"}. Inget skickas utan ditt klick.`} className="max-w-xl"
-      footer={<><Button variant="ghost" onClick={onClose}>Avbryt</Button><Button variant="brand" onClick={send} loading={busy} disabled={!body.trim() || !task?.leads?.customers?.email || task?.leads?.customers?.opted_out}><Send />Godkänn och skicka</Button></>}>
+    <Dialog open={!!task} onOpenChange={(o) => !o && onClose()} title="Följ upp med kunden" description={`Till ${customer?.email ?? (task?.lead_id ? "kunden saknar e-post" : "kundens primära kontaktperson")}. Inget skickas utan ditt klick.`} className="max-w-xl"
+      footer={<><Button variant="ghost" onClick={onClose}>Avbryt</Button><Button variant="brand" onClick={send} loading={busy} disabled={!body.trim() || (!!task?.lead_id && !customer?.email) || customer?.opted_out}><Send />Godkänn och skicka</Button></>}>
       <div className="space-y-4">
         <div className="flex items-center justify-between gap-3 rounded-xl border bg-muted/30 p-3">
           <p className="text-[13px] text-muted-foreground">{aiAllowed ? "Låt AI skriva ett personligt utkast baserat på historiken." : "AI-skrivna uppföljningar ingår i Professional."}</p>
@@ -112,7 +122,7 @@ export default function FollowUps() {
   const upcoming = p.filter((t) => new Date(t.due_at).getTime() >= now);
 
   const list = (rows: FollowUpTask[], empty: string) => rows.length ? <div className="space-y-2.5">{rows.map((t) => <TaskRow key={t.id} t={t} onOpen={setOpen} />)}</div>
-    : <EmptyState icon={<BellRing />} title={empty} description="Påminnelser skapas automatiskt för obesvarade förfrågningar och skickade offerter." />;
+    : <EmptyState icon={<BellRing />} title={empty} description="Påminnelser skapas automatiskt för obesvarade förfrågningar, skickade offerter, avtal som löper ut och kunder som inte beställt på länge." />;
 
   return (
     <div>

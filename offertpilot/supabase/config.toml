@@ -450,3 +450,9 @@ import_map = "./functions/deno.json"
 
 [functions.team-invite]
 import_map = "./functions/deno.json"
+
+[functions.send-order]
+import_map = "./functions/deno.json"
+
+[functions.portal-invite]
+import_map = "./functions/deno.json"

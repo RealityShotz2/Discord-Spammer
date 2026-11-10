@@ -18,8 +18,9 @@ export default function Register() {
   const [error, setError] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
   const invited = params.get("inbjudan") === "1";
+  const portal = params.get("portal") === "1";
 
-  if (user) return <Navigate to="/app" replace />;
+  if (user) return <Navigate to={portal ? "/portal" : "/app"} replace />;
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
@@ -31,7 +32,7 @@ export default function Register() {
     const { error } = await supabase.auth.signUp({
       email: email.trim(),
       password,
-      options: { emailRedirectTo: `${window.location.origin}/logga-in?verifierad=1` },
+      options: { emailRedirectTo: `${window.location.origin}/logga-in?verifierad=1${portal ? "&till=/portal" : ""}` },
     });
     setLoading(false);
     if (error) return setError(errorMessage(error));
@@ -49,11 +50,11 @@ export default function Register() {
 
   return (
     <AuthLayout
-      title={invited ? "Gå med i ditt team" : "Skapa ditt konto"}
-      subtitle={invited ? "Skapa ett konto med e-postadressen du blev inbjuden med." : "14 dagars provperiod. Inget kort krävs."}
-      footer={<>Har du redan ett konto? <Link to="/logga-in" className="font-medium text-brand hover:underline">Logga in</Link></>}>
+      title={portal ? "Aktivera kundportalen" : invited ? "Gå med i ditt team" : "Skapa ditt konto"}
+      subtitle={portal ? "Skapa ett lösenord för e-postadressen som din leverantör bjöd in." : invited ? "Skapa ett konto med e-postadressen du blev inbjuden med." : "14 dagars provperiod. Inget kort krävs."}
+      footer={<>Har du redan ett konto? <Link to={portal ? "/logga-in?till=/portal" : "/logga-in"} className="font-medium text-brand hover:underline">Logga in</Link></>}>
       <form onSubmit={submit} className="space-y-4" noValidate>
-        <Field label="Jobbmejl" htmlFor="email">
+        <Field label={portal ? "E-post" : "Jobbmejl"} htmlFor="email">
           <Input id="email" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="namn@foretag.se" />
         </Field>
         <Field label="Lösenord" hint={<PasswordHint />} htmlFor="password">

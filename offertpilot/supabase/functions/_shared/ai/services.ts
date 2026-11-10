@@ -152,10 +152,11 @@ export async function draftReply(db: SupabaseClient, env: Env, leadId: string, i
 
 // 5b: uppföljningsmeddelande för en uppgift
 export async function draftFollowUp(db: SupabaseClient, env: Env, taskId: string) {
-  const { data: task } = await db.from("follow_up_tasks").select("id,lead_id,quotation_id,sequence,kind,status,quotations(number,title,total,sent_at,valid_until)")
+  const { data: task } = await db.from("follow_up_tasks").select("id,lead_id,customer_id,quotation_id,sequence,kind,status,quotations(number,title,total,sent_at,valid_until)")
     .eq("id", taskId).maybeSingle();
   if (!task) throw Object.assign(new Error("Uppgiften hittades inte"), { code: "P0002" });
   if (task.status !== "pending") fail("Uppgiften är redan avslutad");
+  if (!task.lead_id) return draftCustomerFollowUp(db, env, task as { id: string; customer_id: string; kind: string });
   const lc = await loadLeadContext(db, task.lead_id);
   const ctx = await loadOrgContext(db, lc.organization_id);
   const q = (Array.isArray(task.quotations) ? task.quotations[0] : task.quotations) as { number: string; title: string; sent_at: string | null; valid_until: string | null } | null;
@@ -186,4 +187,35 @@ export async function ensureConversation(db: SupabaseClient, orgId: string, lead
     throw error;
   }
   return data.id;
+}
+
+// Uppföljning av avtalskund (t.ex. kund som inte beställt på länge eller avtal som löper ut)
+async function draftCustomerFollowUp(db: SupabaseClient, env: Env, task: { id: string; customer_id: string; kind: string }) {
+  const { data: c } = await db.from("customers").select("id,organization_id,name,company_name,city").eq("id", task.customer_id).maybeSingle();
+  if (!c) throw Object.assign(new Error("Kunden hittades inte"), { code: "P0002" });
+  const ctx = await loadOrgContext(db, c.organization_id);
+  const { data: orders } = await db.from("orders").select("number,created_at,total,order_items(description,quantity,unit)")
+    .eq("customer_id", c.id).neq("status", "cancelled").order("created_at", { ascending: false }).limit(3);
+  const history = (orders ?? []).map((o: { number: string; created_at: string; order_items: { description: string; quantity: number; unit: string }[] }) =>
+    `${o.number} (${o.created_at.slice(0, 10)}): ${o.order_items.map((i) => `${i.quantity} ${i.unit} ${i.description}`).join(", ")}`).join("\n");
+  const first = c.name.split(" ")[0];
+  const purpose = task.kind === "agreement_renewal" ? "Avtalet med kunden löper snart ut. Föreslå ett samtal om förlängning."
+    : "Kunden har inte beställt på ett tag. Hör av dig vänligt, påminn om vad de brukar beställa och erbjud hjälp med nästa beställning.";
+  const lc: LeadContext = { lead: { id: c.id, title: c.name, requested_service: null, message: history || null, source: "manual", ai_summary: null, ai_missing_info: null },
+    customer: { name: c.name, city: c.city, company_name: c.company_name }, messages: [] };
+  const res = await callLlm(env, {
+    schemaName: "message_draft",
+    schema: MessageDraftSchema,
+    maxTokens: 8000,
+    system: `${BASE_RULES}\n\nUppgift: Skriv ett kort, personligt mejl till en befintlig avtalskund. ${purpose} Erbjud inga rabatter eller nya villkor och ange inga priser.`,
+    user: `${companyBlock(ctx)}\n\n${customerBlock(lc)}`,
+  }, () => ({
+    subject: task.kind === "agreement_renewal" ? `Vårt avtal – dags att se över förlängning` : `Dags för en ny beställning?`,
+    body: task.kind === "agreement_renewal"
+      ? `Hej ${first}!\n\nVårt avtal närmar sig sitt slutdatum och vi vill gärna fortsätta samarbetet. Har du tid för ett kort samtal om förlängning de närmaste veckorna?\n\nVänliga hälsningar\n${ctx.org.name}`
+      : `Hej ${first}!\n\nDet var ett tag sedan vi hördes. Vill du att vi lägger upp en ny beställning likt den förra? Svara gärna på det här mejlet så ordnar vi det.\n\nVänliga hälsningar\n${ctx.org.name}`,
+  }));
+  const { error } = await db.from("follow_up_tasks").update({ draft_subject: res.data.subject, draft_body: res.data.body, ai_generated: true }).eq("id", task.id);
+  if (error) throw error;
+  return { organizationId: c.organization_id as string, leadId: null as unknown as string, taskId: task.id, draft: res.data, meta: res as UsageMeta };
 }

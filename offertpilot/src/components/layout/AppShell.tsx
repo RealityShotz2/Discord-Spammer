@@ -3,7 +3,7 @@ import { Link, NavLink, useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import {
   BellRing, BookOpen, Building2, Check, ChevronsUpDown, FileText, Inbox, LayoutDashboard, LogOut, Menu as MenuIcon, Moon,
-  Settings as SettingsIcon, Sun, Users, X,
+  Settings as SettingsIcon, ShoppingCart, Sun, Tags, Users, X,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useOrg } from "@/hooks/useOrg";
@@ -16,7 +16,10 @@ import { Logo } from "./Logo";
 const NAV = [
   { to: "/app", label: "Översikt", icon: LayoutDashboard, end: true },
   { to: "/app/leads", label: "Leads", icon: Users },
+  { to: "/app/kunder", label: "Kunder", icon: Building2 },
   { to: "/app/offerter", label: "Offerter", icon: FileText },
+  { to: "/app/bestallningar", label: "Beställningar", icon: ShoppingCart },
+  { to: "/app/prislistor", label: "Prislistor", icon: Tags },
   { to: "/app/uppfoljning", label: "Uppföljning", icon: BellRing, badge: "tasks" as const },
   { to: "/app/kommunikation", label: "Kommunikation", icon: Inbox },
   { to: "/app/kunskapsbas", label: "Kunskapsbas", icon: BookOpen },

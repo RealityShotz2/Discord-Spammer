@@ -61,10 +61,14 @@ function wrap(text: string, font: PDFFont, size: number, maxWidth: number): stri
 
 const fmtDate = (d: string | null) => (d ? new Date(d).toLocaleDateString("sv-SE") : "–");
 
-export async function renderQuotePdf(args: { quote: PdfQuote; items: PdfItem[]; org: PdfOrg; customer: PdfCustomer; footer?: string | null; useBranding: boolean; draftWatermark?: boolean }): Promise<Uint8Array> {
+/** Rubriker för dokumenttypen. Standard är offert – orderbekräftelser skickar egna. */
+export interface PdfDocLabels { title: string; docName: string; numberLabel: string; dateLabel: string; meta: [string, string][]; deliveryLabel?: string }
+
+export async function renderQuotePdf(args: { quote: PdfQuote; items: PdfItem[]; org: PdfOrg; customer: PdfCustomer; footer?: string | null; useBranding: boolean; draftWatermark?: boolean; labels?: PdfDocLabels }): Promise<Uint8Array> {
   const { quote, items, org, customer } = args;
   const doc = await PDFDocument.create();
-  doc.setTitle(`Offert ${quote.number} – ${org.name}`);
+  const L: PdfDocLabels = args.labels ?? { title: "OFFERT", docName: "Offert", numberLabel: "Offertnummer", dateLabel: "Datum", meta: [["Giltig till", fmtDate(quote.valid_until)]] };
+  doc.setTitle(`${L.docName} ${quote.number} – ${org.name}`);
   doc.setAuthor(org.name);
   doc.setCreator("Offertfabriken");
   doc.setLanguage("sv-SE");
@@ -108,11 +112,11 @@ export async function renderQuotePdf(args: { quote: PdfQuote; items: PdfItem[]; 
   // Sidhuvud
   page.drawRectangle({ x: 0, y: A4.h - 6, width: A4.w, height: 6, color: accent });
   text(org.name, M, y - 4, { size: 16, f: bold });
-  text("OFFERT", A4.w - M, y - 4, { size: 16, f: bold, color: accent, align: "right" });
+  text(L.title, A4.w - M, y - 4, { size: 16, f: bold, color: accent, align: "right" });
   y -= 22;
   const orgLines = [org.address, [org.postal_code, org.city].filter(Boolean).join(" "), org.org_number ? `Org.nr ${org.org_number}` : null].filter(Boolean) as string[];
   orgLines.forEach((l, i) => text(l, M, y - i * 12, { size: 9, color: muted }));
-  const meta: [string, string][] = [["Offertnummer", quote.number], ["Datum", fmtDate(quote.created_at)], ["Giltig till", fmtDate(quote.valid_until)]];
+  const meta: [string, string][] = [[L.numberLabel, quote.number], [L.dateLabel, fmtDate(quote.created_at)], ...L.meta];
   meta.forEach(([k, v], i) => {
     text(k, A4.w - M - 110, y - i * 12, { size: 9, color: muted });
     text(v, A4.w - M, y - i * 12, { size: 9, f: bold, align: "right" });
@@ -172,7 +176,7 @@ export async function renderQuotePdf(args: { quote: PdfQuote; items: PdfItem[]; 
   if (quote.apply_rot) {
     paragraph("ROT-avdrag", "* Arbetskostnad som omfattas av ROT. Avdraget är preliminärt och förutsätter att kunden har utrymme för skattereduktion hos Skatteverket.");
   }
-  paragraph("Leveranstid", quote.delivery_timeframe);
+  paragraph(L.deliveryLabel ?? "Leveranstid", quote.delivery_timeframe);
   paragraph("Villkor", quote.terms);
 
   // Sidfot på alla sidor

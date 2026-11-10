@@ -21,7 +21,16 @@ const QuotationEditor = lazy(() => import("./pages/app/QuotationEditor"));
 const FollowUps = lazy(() => import("./pages/app/FollowUps"));
 const Communication = lazy(() => import("./pages/app/Communication"));
 const Knowledge = lazy(() => import("./pages/app/Knowledge"));
+const Customers = lazy(() => import("./pages/app/Customers"));
+const CustomerProfile = lazy(() => import("./pages/app/CustomerProfile"));
+const PriceLists = lazy(() => import("./pages/app/PriceLists"));
+const PriceListEditor = lazy(() => import("./pages/app/PriceListEditor"));
+const Orders = lazy(() => import("./pages/app/Orders"));
+const OrderEditor = lazy(() => import("./pages/app/OrderEditor"));
+const RecurringOrderEditor = lazy(() => import("./pages/app/RecurringOrderEditor"));
 const Settings = lazy(() => import("./pages/app/Settings"));
+const Portal = lazy(() => import("./pages/portal/Portal"));
+const PortalRegisterRedirect = lazy(() => import("./pages/portal/Portal").then((m) => ({ default: m.PortalRegisterRedirect })));
 const InquiryForm = lazy(() => import("./pages/public/InquiryForm"));
 const PublicQuote = lazy(() => import("./pages/public/PublicQuote"));
 const NotFound = lazy(() => import("./pages/public/NotFound"));
@@ -79,11 +88,21 @@ export function App() {
         <Route path="/app/leads/:id" element={app(<LeadDetail />)} />
         <Route path="/app/offerter" element={app(<Quotations />)} />
         <Route path="/app/offerter/:id" element={app(<QuotationEditor />)} />
+        <Route path="/app/kunder" element={app(<Customers />)} />
+        <Route path="/app/kunder/:id" element={app(<CustomerProfile />)} />
+        <Route path="/app/prislistor" element={app(<PriceLists />)} />
+        <Route path="/app/prislistor/:id" element={app(<PriceListEditor />)} />
+        <Route path="/app/bestallningar" element={app(<Orders />)} />
+        <Route path="/app/bestallningar/aterkommande/:id" element={app(<RecurringOrderEditor />)} />
+        <Route path="/app/bestallningar/:id" element={app(<OrderEditor />)} />
         <Route path="/app/uppfoljning" element={app(<FollowUps />)} />
         <Route path="/app/kommunikation" element={app(<Communication />)} />
         <Route path="/app/kunskapsbas" element={app(<Knowledge />)} />
         <Route path="/app/installningar" element={app(<Settings />)} />
         <Route path="/app/installningar/:tab" element={app(<Settings />)} />
+        <Route path="/portal" element={<Portal />} />
+        <Route path="/portal/registrera" element={<PortalRegisterRedirect />} />
+        <Route path="/portal/logga-in" element={<Navigate to="/logga-in?till=/portal" replace />} />
         <Route path="/forfragan/:key" element={<InquiryForm />} />
         <Route path="/offert/:token" element={<PublicQuote />} />
         <Route path="*" element={<NotFound />} />

@@ -19,7 +19,8 @@ Deno.serve(handler(["POST"], async (req) => {
   await rateLimit(`send:user:${user.userId}`, 30, 60);
   const admin = adminClient();
 
-  let orgId: string, leadId: string, subject: string, body: string, messageId: string | null = null, taskId: string | null = null;
+  let orgId: string, leadId: string | null = null, subject: string, body: string, messageId: string | null = null, taskId: string | null = null;
+  let taskCustomerId: string | null = null;
   if ("message_id" in parsed.data) {
     const { data: m } = await user.db.from("messages").select("id,organization_id,lead_id,direction,status,subject,body").eq("id", parsed.data.message_id).maybeSingle();
     if (!m) throw new HttpError(404, "Meddelandet hittades inte");
@@ -28,17 +29,26 @@ Deno.serve(handler(["POST"], async (req) => {
     subject = m.subject ?? "Meddelande";
     messageId = m.id;
   } else {
-    const { data: t } = await user.db.from("follow_up_tasks").select("id,organization_id,lead_id,status").eq("id", parsed.data.task_id).maybeSingle();
+    const { data: t } = await user.db.from("follow_up_tasks").select("id,organization_id,lead_id,customer_id,status").eq("id", parsed.data.task_id).maybeSingle();
     if (!t) throw new HttpError(404, "Uppgiften hittades inte");
     if (t.status !== "pending") throw new HttpError(400, "Uppgiften är redan avslutad");
     ({ organization_id: orgId, lead_id: leadId } = t);
+    taskCustomerId = t.lead_id ? null : t.customer_id;
     subject = parsed.data.subject;
     body = parsed.data.body;
     taskId = t.id;
   }
 
-  const { data: lead } = await user.db.from("leads").select("customer_id, customers(name,email,opted_out)").eq("id", leadId).single();
-  const customer = (Array.isArray(lead?.customers) ? lead?.customers[0] : lead?.customers) as { name: string; email: string | null; opted_out: boolean } | undefined;
+  let customer: { name: string; email: string | null; opted_out: boolean } | undefined;
+  if (leadId) {
+    const { data: lead } = await user.db.from("leads").select("customer_id, customers(name,email,opted_out)").eq("id", leadId).single();
+    customer = (Array.isArray(lead?.customers) ? lead?.customers[0] : lead?.customers) as typeof customer;
+  } else {
+    // Avtalskund utan lead: kundens e-post, annars primär kontaktperson
+    const { data: c } = await user.db.from("customers").select("name,email,opted_out,customer_contacts(email,is_primary)").eq("id", taskCustomerId!).single();
+    const contacts = (c?.customer_contacts ?? []) as { email: string | null; is_primary: boolean }[];
+    customer = c ? { name: c.name, opted_out: c.opted_out, email: c.email ?? contacts.find((x) => x.is_primary && x.email)?.email ?? contacts.find((x) => x.email)?.email ?? null } : undefined;
+  }
   if (!customer?.email) throw new HttpError(400, "Kunden saknar e-postadress");
   if (customer.opted_out) throw new HttpError(403, "Kunden har avböjt fler utskick");
 
@@ -58,6 +68,8 @@ Deno.serve(handler(["POST"], async (req) => {
   const now = new Date().toISOString();
   if (messageId) {
     await admin.from("messages").update({ status, sent_at: now }).eq("id", messageId).eq("organization_id", orgId);
+  } else if (!leadId) {
+    await user.db.from("follow_up_tasks").update({ status: "done", completed_at: now, completed_by: user.userId, draft_subject: subject, draft_body: body }).eq("id", taskId!);
   } else {
     const convId = await ensureConversation(user.db, orgId, leadId, "email", subject);
     const { data: m } = await admin.from("messages").insert({
@@ -67,13 +79,13 @@ Deno.serve(handler(["POST"], async (req) => {
     messageId = m?.id ?? null;
     await user.db.from("follow_up_tasks").update({ status: "done", completed_at: now, completed_by: user.userId, draft_subject: subject, draft_body: body }).eq("id", taskId!);
   }
-  await user.db.from("leads").update({ last_contact_at: now }).eq("id", leadId);
+  if (leadId) await user.db.from("leads").update({ last_contact_at: now }).eq("id", leadId);
   // Ett svar till kunden avslutar påminnelsen om obesvarad förfrågan
-  await user.db.from("follow_up_tasks").update({ status: "done", completed_at: now, completed_by: user.userId })
+  if (leadId) await user.db.from("follow_up_tasks").update({ status: "done", completed_at: now, completed_by: user.userId })
     .eq("lead_id", leadId).eq("kind", "lead_response").eq("status", "pending");
   await admin.from("activity_logs").insert({
     organization_id: orgId, actor_id: user.userId, action: status === "sent" ? "message.sent" : "message.demo_not_sent",
-    entity_type: "lead", entity_id: leadId, details: { subject },
+    entity_type: leadId ? "lead" : "customer", entity_id: leadId ?? taskCustomerId, details: { subject },
   });
 
   return json(req, {

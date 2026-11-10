@@ -50,3 +50,21 @@ export const schemas = {
   message_draft: MessageDraftSchema,
 } as const;
 export type SchemaName = keyof typeof schemas;
+
+// AI-orderassistent: tolkar en inklistrad beställning. Innehåller inga prisfält –
+// priser hämtas alltid från kundens prislista på servern.
+export const OrderDraftSchema = z.object({
+  customer_id: z.string().uuid().nullable().describe("ID för kunden i listan, eller null om ingen kund säkert matchar."),
+  items: z.array(z.object({
+    item_id: z.string().uuid().nullable().describe("ID för artikeln i prislistan, eller null om ingen artikel passar."),
+    description: shortText(300),
+    quantity: z.number().positive().max(1000000).describe("Mängd enligt texten. Om mängd saknas: 1 och en notering i missing_information."),
+    unit: shortText(16),
+    reason: shortText(300),
+  })).min(1).max(50),
+  requested_delivery_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable()
+    .describe("Önskat leveransdatum (YYYY-MM-DD) endast om det framgår av texten, annars null."),
+  customer_reference: z.string().max(120).nullable().describe("Kundens ordernummer eller referens om den nämns, annars null."),
+  missing_information: z.array(shortText(300)).max(10),
+});
+export type OrderDraft = z.infer<typeof OrderDraftSchema>;
