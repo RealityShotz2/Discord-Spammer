@@ -55,3 +55,35 @@ export const ACTIVITY: Record<string, string> = {
 
 export const UNITS = ["st", "tim", "m²", "m", "lpm", "dag", "paket", "km"];
 export const INDUSTRIES = ["Bygg & renovering", "El & installation", "VVS", "Måleri", "Städ & fastighetsservice", "Trädgård & mark", "Flytt & transport", "IT & konsult", "Event & catering", "Annat"];
+
+// ----------------------------------------------------------------------------- affärssystem
+import type { AgreementStatus, CustomerStatus, Frequency, OrderSource, OrderStatus } from "./types";
+type Tone = "neutral" | "brand" | "warning" | "success" | "danger";
+
+export const CUSTOMER_STATUS: Record<CustomerStatus, { label: string; tone: Tone }> = {
+  prospect: { label: "Prospekt", tone: "neutral" }, active: { label: "Aktiv", tone: "success" },
+  paused: { label: "Pausad", tone: "warning" }, ended: { label: "Avslutad", tone: "neutral" },
+};
+export const ORDER_STATUS: Record<OrderStatus, { label: string; tone: Tone }> = {
+  draft: { label: "Utkast", tone: "neutral" }, pending_approval: { label: "Väntar på godkännande", tone: "warning" },
+  confirmed: { label: "Bekräftad", tone: "brand" }, in_progress: { label: "Pågår", tone: "brand" },
+  delivered: { label: "Levererad", tone: "success" }, cancelled: { label: "Makulerad", tone: "danger" },
+};
+export const ORDER_SOURCE: Record<OrderSource, string> = { manual: "Manuell", recurring: "Återkommande", portal: "Kundportal", ai: "AI-assistent", quote: "Från offert" };
+export const AGREEMENT_STATUS: Record<AgreementStatus, { label: string; tone: Tone }> = {
+  draft: { label: "Utkast", tone: "neutral" }, active: { label: "Aktivt", tone: "success" },
+  expired: { label: "Utgånget", tone: "warning" }, terminated: { label: "Uppsagt", tone: "neutral" },
+};
+export const FREQUENCY: Record<Frequency, string> = { daily: "Dagligen", weekly: "Veckovis", monthly: "Månadsvis" };
+export const WEEKDAYS = ["Mån", "Tis", "Ons", "Tor", "Fre", "Lör", "Sön"];
+/** Tillåtna statusbyten (samma regler som set_order_status i databasen). */
+export const ORDER_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
+  draft: ["pending_approval", "confirmed", "cancelled"], pending_approval: ["confirmed", "draft", "cancelled"],
+  confirmed: ["in_progress", "delivered", "cancelled"], in_progress: ["delivered", "cancelled"], delivered: [], cancelled: [],
+};
+Object.assign(ACTIVITY, {
+  "order.created": "Order skapad", "order.status_changed": "Orderstatus ändrad", "order.duplicated": "Order duplicerad",
+  "order.confirmation_sent": "Orderbekräftelse skickad", "agreement.created": "Avtal skapat", "agreement.updated": "Avtal uppdaterat",
+  "portal.invited": "Bjöd in till kundportalen", "portal.disabled": "Portalåtkomst avstängd", "portal.enabled": "Portalåtkomst återställd",
+  "ai.order_draft": "AI skapade orderutkast",
+});

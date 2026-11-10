@@ -107,7 +107,7 @@ export function useTasks(filter?: { leadId?: string; status?: "pending" | "close
   return useQuery({
     queryKey: ["tasks", org, filter?.leadId ?? "all", filter?.status ?? "all"],
     queryFn: async () => {
-      let q = supabase.from("follow_up_tasks").select("*, leads(id,title,stage,customers(name,email,opted_out)), quotations(number,total)")
+      let q = supabase.from("follow_up_tasks").select("*, leads(id,title,stage,customers(name,email,opted_out)), quotations(number,total), customers(id,name,email,opted_out), orders(id,number)")
         .eq("organization_id", org).order("due_at").limit(500);
       if (filter?.leadId) q = q.eq("lead_id", filter.leadId);
       if (filter?.status === "pending") q = q.eq("status", "pending");

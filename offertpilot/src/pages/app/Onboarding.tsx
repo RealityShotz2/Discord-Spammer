@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Navigate, useNavigate } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { ArrowLeft, ArrowRight, Check, Plus, Trash2 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
@@ -36,6 +36,13 @@ export default function Onboarding() {
   useEffect(() => {
     if (org && settings && !settings.onboarding_completed) setStep(2);
   }, [org, settings]);
+
+  // Inbjudna kundportalsanvändare ska till portalen, inte skapa ett eget företag
+  const [portalCount, setPortalCount] = useState(0);
+  useEffect(() => {
+    if (loading || org) return;
+    supabase.rpc("accept_portal_invitations").then(() => supabase.rpc("portal_access")).then(({ data }) => setPortalCount(Array.isArray(data) ? data.length : 0));
+  }, [loading, org]);
 
   if (!loading && org && settings?.onboarding_completed) return <Navigate to="/app" replace />;
 
@@ -100,6 +107,12 @@ export default function Onboarding() {
         <button onClick={signOut} className="text-sm text-muted-foreground hover:text-foreground">Logga ut</button>
       </header>
       <main className="mx-auto max-w-3xl px-6 pb-24">
+        {portalCount > 0 && !org && (
+          <Card className="mb-8 flex flex-col gap-3 border-brand/30 bg-brand-soft/40 p-5 sm:flex-row sm:items-center sm:justify-between">
+            <div><p className="font-medium">Du är inbjuden till en kundportal</p><p className="text-sm text-muted-foreground">Vill du beställa eller se dina priser behöver du inte skapa ett företag här.</p></div>
+            <Button variant="brand" asChild><Link to="/portal">Gå till kundportalen</Link></Button>
+          </Card>
+        )}
         <ol className="mb-10 flex items-center gap-3" aria-label="Steg">
           {STEPS.map((s, i) => (
             <li key={s} className="flex flex-1 items-center gap-3">

@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { ArrowUpRight, BellRing, CheckCircle2, Clock, FileText, Inbox, Plus, Sparkles, TrendingUp, Users } from "lucide-react";
+import { ArrowUpRight, BellRing, Building2, CalendarClock, CheckCircle2, Clock, FileText, Handshake, Inbox, Plus, Repeat, ShoppingCart, Sparkles, TrendingUp, UserX, Users } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useOrg } from "@/hooks/useOrg";
 import { formatSEK } from "@shared/pricing.ts";
@@ -35,6 +35,51 @@ function Stat({ label, value, sub, icon: Icon, to, tone }: { label: string; valu
   );
 }
 
+interface BusinessStats {
+  has_business: boolean; active_customers: number; active_agreements: number; agreements_expiring_30d: number; orders_30d: number;
+  order_value_30d: number; pending_orders: number; upcoming_recurring_7d: number; inactive_customers_count: number;
+  upcoming_recurring: { id: string; title: string; customer: string; next_occurrence: string }[];
+  inactive_customers: { id: string; name: string; last_order_at: string }[];
+}
+
+/** Avtalskunder och order – visas först när företaget börjat använda prislistor, avtal eller order. */
+function BusinessOverview({ b }: { b: BusinessStats }) {
+  return (
+    <section className="mt-6" aria-label="Avtalskunder och order">
+      <div className="mb-3 flex items-baseline justify-between"><h2 className="label-mono">Avtalskunder & order</h2><Link to="/app/bestallningar" className="text-xs text-brand hover:underline">Alla beställningar</Link></div>
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <Stat label="Aktiva kunder" value={String(b.active_customers)} icon={Building2} to="/app/kunder?status=active" sub={<><Handshake className="mr-1 inline size-3" />{b.active_agreements} aktiva avtal{b.agreements_expiring_30d ? ` · ${b.agreements_expiring_30d} löper ut inom 30 d` : ""}</>} />
+        <Stat label="Order 30 dagar" value={String(b.orders_30d)} icon={ShoppingCart} to="/app/bestallningar" sub={`${formatSEK(b.order_value_30d)} bekräftat inkl. moms`} />
+        <Stat label="Order att hantera" value={String(b.pending_orders)} icon={Clock} to="/app/bestallningar?status=pending_approval" tone={b.pending_orders ? "warning" : undefined} sub="Utkast och väntar på godkännande" />
+        <Stat label="Inaktiva kunder" value={String(b.inactive_customers_count)} icon={UserX} to="/app/uppfoljning" tone={b.inactive_customers_count ? "warning" : undefined} sub="Ingen order på länge" />
+      </div>
+      <div className="mt-4 grid gap-4 lg:grid-cols-2">
+        <Card>
+          <CardHeader title={<span className="flex items-center gap-2"><Repeat className="size-4" />Kommande återkommande order</span>} description={`${b.upcoming_recurring_7d} inom 7 dagar`} />
+          <CardBody className="pt-3">
+            {b.upcoming_recurring.length ? <ul className="divide-y">{b.upcoming_recurring.map((r) => (
+              <li key={r.id}><Link to={`/app/bestallningar/aterkommande/${r.id}`} className="flex items-center justify-between gap-3 py-2.5 text-sm hover:text-brand">
+                <span className="min-w-0 truncate"><span className="font-medium">{r.title}</span><span className="text-muted-foreground"> · {r.customer}</span></span>
+                <span className="flex shrink-0 items-center gap-1.5 font-mono text-xs text-muted-foreground"><CalendarClock className="size-3.5" />{formatDate(r.next_occurrence, { weekday: "short", day: "numeric", month: "short" })}</span>
+              </Link></li>))}</ul>
+              : <p className="py-6 text-center text-sm text-muted-foreground">Inga schemalagda beställningar.</p>}
+          </CardBody>
+        </Card>
+        <Card>
+          <CardHeader title={<span className="flex items-center gap-2"><UserX className="size-4" />Kunder att följa upp</span>} description="Aktiva kunder som inte beställt på ett tag" />
+          <CardBody className="pt-3">
+            {b.inactive_customers.length ? <ul className="divide-y">{b.inactive_customers.map((c) => (
+              <li key={c.id}><Link to={`/app/kunder/${c.id}`} className="flex items-center justify-between gap-3 py-2.5 text-sm hover:text-brand">
+                <span className="truncate font-medium">{c.name}</span><span className="shrink-0 text-xs text-muted-foreground">Senaste order {relativeTime(c.last_order_at)}</span>
+              </Link></li>))}</ul>
+              : <p className="py-6 text-center text-sm text-muted-foreground">Alla aktiva kunder har beställt nyligen.</p>}
+          </CardBody>
+        </Card>
+      </div>
+    </section>
+  );
+}
+
 const chartTooltip = {
   contentStyle: { background: "hsl(var(--popover))", border: "1px solid hsl(var(--border))", borderRadius: 12, fontSize: 12, boxShadow: "0 8px 24px rgba(0,0,0,.08)" },
   labelStyle: { color: "hsl(var(--muted-foreground))", marginBottom: 4 },
@@ -50,6 +95,10 @@ export default function Dashboard() {
     supabase.rpc("refresh_follow_ups", { org: org.id }).then(({ data }) => {
       if (data) qc.invalidateQueries({ queryKey: ["tasks-due-count"] });
     });
+    // Avtalspåminnelser, inaktiva kunder och förberedda återkommande order (idempotent)
+    supabase.rpc("refresh_business", { org: org.id }).then(({ error }) => {
+      if (!error) qc.invalidateQueries({ queryKey: ["business"] });
+    });
   }, [org, qc]);
 
   const stats = useQuery({
@@ -59,6 +108,15 @@ export default function Dashboard() {
       const { data, error } = await supabase.rpc("dashboard_stats", { org: org!.id });
       if (error) throw error;
       return data as Stats;
+    },
+  });
+  const business = useQuery({
+    queryKey: ["business", org?.id],
+    enabled: !!org,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("business_stats", { org: org!.id });
+      if (error) throw error;
+      return data as BusinessStats;
     },
   });
   const activity = useQuery({
@@ -120,6 +178,8 @@ export default function Dashboard() {
             <Stat label="Konvertering" value={conversion === null ? "–" : `${conversion} %`} icon={ArrowUpRight} to="/app/leads" sub={closed ? `${s.won_leads} vunna av ${closed} avslutade` : "Inga avslutade affärer ännu"} />
             <Stat label="Uppföljningar" value={String(s.pending_followups)} icon={BellRing} to="/app/uppfoljning" tone={s.overdue_followups ? "warning" : undefined} sub={s.overdue_followups ? `${s.overdue_followups} försenade` : "Inga försenade"} />
           </div>
+
+          {business.data?.has_business && <BusinessOverview b={business.data} />}
 
           <div className="mt-6 grid gap-6 xl:grid-cols-[1.6fr_1fr]">
             <Card>
@@ -195,7 +255,8 @@ export default function Dashboard() {
                     <ol className="relative space-y-4 before:absolute before:inset-y-1 before:left-[5px] before:w-px before:bg-border">
                       {activity.data.map((a) => {
                         const title = (a.details.title ?? a.details.number) as string | undefined;
-                        const href = a.entity_type === "lead" && a.entity_id ? `/app/leads/${a.entity_id}` : a.entity_type === "quotation" && a.entity_id ? `/app/offerter/${a.entity_id}` : undefined;
+                        const href = !a.entity_id ? undefined : a.entity_type === "lead" ? `/app/leads/${a.entity_id}` : a.entity_type === "quotation" ? `/app/offerter/${a.entity_id}`
+                          : a.entity_type === "order" ? `/app/bestallningar/${a.entity_id}` : a.entity_type === "customer" ? `/app/kunder/${a.entity_id}` : undefined;
                         const content = (
                           <>
                             <p className="text-[13px] font-medium">{ACTIVITY[a.action] ?? a.action}</p>

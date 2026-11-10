@@ -16,7 +16,9 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const next = params.get("till")?.startsWith("/app") ? params.get("till")! : "/app";
+  const till = params.get("till") ?? "";
+  const portal = till.startsWith("/portal");
+  const next = /^\/(app|portal)(\/|$)/.test(till) ? till : "/app";
 
   if (user) return <Navigate to={next} replace />;
 
@@ -32,7 +34,8 @@ export default function Login() {
   };
 
   return (
-    <AuthLayout title="Logga in" subtitle="Fortsätt där du slutade." footer={<>Inget konto ännu? <Link to="/registrera" className="font-medium text-brand hover:underline">Skapa konto</Link></>}>
+    <AuthLayout title={portal ? "Logga in i kundportalen" : "Logga in"} subtitle={portal ? "Se dina priser, beställ och följ dina order." : "Fortsätt där du slutade."}
+      footer={<>Inget konto ännu? <Link to={portal ? "/registrera?portal=1" : "/registrera"} className="font-medium text-brand hover:underline">Skapa konto</Link></>}>
       <form onSubmit={submit} className="space-y-4" noValidate>
         {params.get("verifierad") && <p className="rounded-xl border border-success/30 bg-success/10 p-3 text-sm text-success">E-postadressen är bekräftad. Logga in för att fortsätta.</p>}
         <Field label="E-postadress" htmlFor="email">

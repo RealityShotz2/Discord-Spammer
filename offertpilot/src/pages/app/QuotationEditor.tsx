@@ -12,6 +12,7 @@ import type { Quotation, QuotationItem } from "@/lib/types";
 import { computeTotals, formatNumber, formatSEK } from "@shared/pricing.ts";
 import { cn, downloadBlob, formatDate, formatDateTime } from "@/lib/utils";
 import { normItem, normQuote, useInvalidate, useServices } from "@/hooks/data";
+import { useCatalog } from "@/hooks/business";
 import { useOrg } from "@/hooks/useOrg";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -76,6 +77,7 @@ export default function QuotationEditor() {
 
   const quote = q.data?.quote;
   const editable = quote?.status === "draft";
+  const catalog = useCatalog(editable ? quote?.customer_id : null);
   const totals = useMemo(() => computeTotals(items, {
     discount_type: (draft.discount_type ?? "none") as "none", discount_value: Number(draft.discount_value ?? 0),
     apply_rot: !!draft.apply_rot, rot_percent: Number(draft.rot_percent ?? 30),
@@ -104,6 +106,18 @@ export default function QuotationEditor() {
       organization_id: quote.organization_id, quotation_id: quote.id, service_id: s?.id ?? null, source: s ? "catalog" : "manual",
       description: s?.name ?? "Ny rad", quantity: 1, unit: s?.unit ?? "st", unit_price: s ? s.unit_price : null,
       vat_rate: s?.vat_rate ?? settings?.default_vat_rate ?? 25, is_labor: s?.is_labor ?? false, sort: items.length + 1,
+    });
+    if (error) return toast.error(errorMessage(error));
+    refresh();
+  };
+  // Tillägg: rad från kundens fasta prislista (katalog och prisregler påverkas inte)
+  const addFromPriceList = async (itemId: string) => {
+    const c = catalog.data?.find((x) => x.item_id === itemId);
+    if (!c) return;
+    const { error } = await supabase.from("quotation_items").insert({
+      organization_id: quote.organization_id, quotation_id: quote.id, service_id: null, source: "catalog",
+      description: c.sku ? `${c.name} (${c.sku})` : c.name, quantity: 1, unit: c.unit, unit_price: c.unit_price,
+      vat_rate: c.vat_rate, is_labor: false, sort: items.length + 1,
     });
     if (error) return toast.error(errorMessage(error));
     refresh();
@@ -211,6 +225,12 @@ export default function QuotationEditor() {
                     <option value="">Från katalog…</option>
                     {services.data?.filter((s) => s.active).map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
                   </Select>
+                  {!!catalog.data?.length && (
+                    <Select aria-label="Lägg till från prislista" className="h-9 w-48 text-[13px]" value="" onChange={(e) => e.target.value && addFromPriceList(e.target.value)}>
+                      <option value="">Från prislista…</option>
+                      {catalog.data.map((c) => <option key={c.item_id} value={c.item_id}>{c.name} · {formatSEK(c.unit_price, { decimals: true })}/{c.unit}</option>)}
+                    </Select>
+                  )}
                   <Button size="sm" variant="outline" onClick={() => addItem()}><Plus />Rad</Button>
                 </div>
               ) : null} />
