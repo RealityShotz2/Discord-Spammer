@@ -2,6 +2,8 @@
 
 AI-driven säljassistent för svenska små och medelstora företag: tar emot förfrågningar, analyserar dem, tar fram offertutkast med företagets **egna** priser, låter ägaren godkänna och följer upp affären.
 
+**Affärssystem (tillägg):** fasta prislistor, avtalskunder, beställningar, återkommande order, kundportal och AI-orderassistent – se [docs/affarssystem.md](docs/affarssystem.md). Befintlig tjänstekatalog, prisregler och AI-offertflöde är oförändrade.
+
 **Första kompletta användarresan (verifierad end-to-end):**
 Registrera → bekräfta e-post → konfigurera företag → lägg in tjänster och priser → förfrågan via webbformulär → AI analyserar → AI-offertutkast → ägaren godkänner → PDF/utskick → kunden accepterar via länk → uppföljning.
 
@@ -18,6 +20,7 @@ Registrera → bekräfta e-post → konfigurera företag → lägg in tjänster 
 │  • Publikt formulär      │      │     godkännande, numrering, kvoter, GDPR)   │
 │  • Publik offertvy       │      │  Edge Functions (Deno)                      │
 └──────────────────────────┘      │   ai · send-quotation · send-message        │
+                                  │   send-order · portal-invite                │
                                   │   public-inquiry · public-quote             │
                                   │   team-invite · billing · stripe-webhook    │
                                   └──────────┬───────────────┬──────────────────┘
@@ -49,6 +52,10 @@ Registrera → bekräfta e-post → konfigurera företag → lägg in tjänster 
 
 `plans · organizations · organization_members · organization_invitations · organization_settings · subscriptions · usage_records · services · pricing_rules · knowledge_items · message_templates · customers · leads · conversations · messages · quotations · quotation_items · quotation_versions · follow_up_tasks · activity_logs · rate_limits`
 
+Affärssystem: `customer_contacts · customer_agreements · price_lists · price_list_items · price_list_item_tiers · price_list_item_history · orders · order_items · order_status_history · recurring_orders · recurring_order_items · customer_portal_users`
+
+Orderstatus: `draft → pending_approval → confirmed → in_progress → delivered` (samt `cancelled`).
+
 Leadstatus: `new → qualification → quote_draft → quote_sent → negotiation → won/lost`.
 Offertstatus: `draft → pending_approval → approved → sent → accepted/declined/expired`.
 
@@ -72,10 +79,12 @@ Bekräftelsemejl och lösenordsåterställning hamnar lokalt i Mailpit: http://1
 
 ```bash
 npm run typecheck            # TypeScript
-npm test                     # Vitest: prisberäkning, offertmontering, prompt injection, demoläge
-npx supabase test db         # pgTAP: 47 tester för RLS, roller, låsning, godkännande, uppföljning
-node scripts/e2e-api.mjs     # 29 API-kontroller mot lokala edge functions
-node scripts/e2e-ui.mjs      # 15 steg i webbläsaren (Playwright) – hela användarresan
+npm test                     # Vitest: prisberäkning, offertmontering, scheman, mängdrabatt, AI-order, demoläge
+npx supabase test db         # pgTAP: 122 tester för RLS, roller, låsning, order, återkommande order, kundportal
+node scripts/e2e-api.mjs     # 29 API-kontroller mot lokala edge functions (offertflödet)
+node scripts/e2e-business.mjs  # 41 API-kontroller för prislistor, order, återkommande order, portal, AI-order
+node scripts/e2e-ui.mjs      # 15 steg i webbläsaren (Playwright) – hela offertresan
+node scripts/e2e-business-ui.mjs  # 11 steg i webbläsaren – affärssystemet inkl. kundportal i mobil
 ```
 
 ---
